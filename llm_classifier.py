@@ -124,7 +124,6 @@ for classifier_name, classifier_dir in estimators:
             model.save_pretrained(model_dir)
         from transformers import pipeline
 
-        classifier = pipeline("text-classification", model=model)
+        classifier = pipeline("text-classification", model=model, tokenizer=classifier_dir)
         print(classifier(
             "John Smith had been diligently paying his life insurance premiums for over 20 years. At the age of 55, tragedy struck when he suddenly passed away due to a heart attack. John's family was devastated by the unexpected loss of their beloved father and husband, but they took solace in knowing that they could rely on the life insurance policy he had maintained for so long. After the funeral, John's wife, Mary, contacted the insurance company to initiate the claims process. She promptly submitted all the necessary documentation, including the death certificate, the policy documents, and the completed claim form. The insurance company acknowledged receipt of the claim and assigned a dedicated claims representative to handle Mary's case. The claims representative, Sarah Davis, carefully reviewed the submitted documents to verify their validity. She also reached out to the attending physician to obtain additional medical records and to ensure that there were no underlying health issues that could affect the claim. Sarah provided Mary with regular updates, assuring her that the claim was progressing smoothly and that they were working diligently to expedite the process during this difficult time."))
-
