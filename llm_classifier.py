@@ -37,7 +37,7 @@ else:
 
 # Parameters of the models
 epoch = 1000
-batch_size = 4
+batch_size = 2
 
 # Directories
 save_checkpoints_dir = "./checkpoints/"
@@ -51,6 +51,7 @@ if not os.path.exists(save_results_dir):
 # LLM Classifiers
 estimators = [
     ["gpt2", 'gpt2'],
+    ["bart_large", 'facebook/bart-large'],
     ["bert_base", 'bert-base-uncased'],
     ["distilbert", 'distilbert-base-uncased'],
     ["roberta_base", 'roberta-base'],
