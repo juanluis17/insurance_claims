@@ -13,7 +13,7 @@ from sklearn.metrics import roc_curve
 from transformers import AutoTokenizer
 from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer, EarlyStoppingCallback
 from transformers import DataCollatorWithPadding
-from datasets import Dataset, load_dataset
+from datasets import Dataset, load_from_disk
 
 # GPU
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -24,7 +24,7 @@ label2id = {"car": 0, "home": 1, "life": 2, "health": 3, "sports": 4}
 id2label = {value: key for key, value in label2id.items()}
 
 if os.path.exists("dataset.hf"):
-    train_valid = load_dataset("dataset.hf")
+    train_valid = load_from_disk("dataset.hf")
 else:
     data = pd.read_csv("./data/insurance_dataset.csv", header=0)
     data = data.dropna().reset_index(drop=True)
