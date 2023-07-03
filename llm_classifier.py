@@ -37,7 +37,7 @@ else:
 
 # Parameters of the models
 epoch = 1000
-batch_size = 2
+batch_size = 4
 
 # Directories
 save_checkpoints_dir = "./checkpoints/"
@@ -101,7 +101,8 @@ for classifier_name, classifier_dir in estimators:
             )
             if 'gpt' in model_dir:
                 model.config.pad_token_id = model.config.eos_token_id
-
+            if 'bart' in model_dir:
+                batch_size = 2
             training_args = TrainingArguments(
                 output_dir=model_dir,
                 learning_rate=2e-5,
