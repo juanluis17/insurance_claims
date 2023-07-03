@@ -87,9 +87,9 @@ for classifier_name, classifier_dir in estimators:
         training_args = TrainingArguments(
             output_dir=model_dir,
             learning_rate=2e-5,
-            per_device_train_batch_size=16,
-            per_device_eval_batch_size=16,
-            num_train_epochs=2,
+            per_device_train_batch_size=4,
+            per_device_eval_batch_size=4,
+            num_train_epochs=epoch,
             weight_decay=0.01,
             evaluation_strategy="epoch",
             save_strategy="epoch",
