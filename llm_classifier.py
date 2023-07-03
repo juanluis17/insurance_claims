@@ -50,7 +50,6 @@ if not os.path.exists(save_results_dir):
 
 # LLM Classifiers
 estimators = [
-    ["openai_gpt", 'openai-gpt'],
     ["gpt2", 'gpt2'],
     ["bart_large", 'facebook/bart-large'],
     ["bert_base", 'bert-base-uncased'],
