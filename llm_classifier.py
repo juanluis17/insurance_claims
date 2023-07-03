@@ -50,6 +50,7 @@ if not os.path.exists(save_results_dir):
 
 # LLM Classifiers
 estimators = [
+    ["openai_gpt", 'openai-gpt'],
     ["gpt2", 'gpt2'],
     ["bart_large", 'facebook/bart-large'],
     ["bert_base", 'bert-base-uncased'],
@@ -115,7 +116,7 @@ for classifier_name, classifier_dir in estimators:
                 load_best_model_at_end=True,
                 save_total_limit=1,
             )
-            callbacks = [EarlyStoppingCallback(early_stopping_patience=5)]
+            callbacks = [EarlyStoppingCallback(early_stopping_patience=10)]
 
             trainer = Trainer(
                 model=model,
