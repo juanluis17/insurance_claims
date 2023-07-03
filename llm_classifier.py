@@ -36,7 +36,7 @@ else:
     train_valid.save_to_disk("dataset.hf")
 
 # Parameters of the models
-epoch = 10000
+epoch = 1000
 batch_size = 4
 
 # Directories
