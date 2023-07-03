@@ -65,7 +65,7 @@ for classifier_name, classifier_dir in estimators:
     if os.path.exists(model_dir_results):
         pred_labels, scores = pickle.load(open(model_dir_results, 'rb'))
     else:
-        if os.path.exists(model_dir):
+        if os.path.exists(os.path.join(model_dir, 'pytorch_model.bin')):
             model = AutoModelForSequenceClassification.from_pretrained(
                 model_dir, num_labels=len(label2id), id2label=id2label, label2id=label2id
             )
