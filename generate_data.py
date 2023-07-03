@@ -6,8 +6,8 @@ import time
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 domains = ["life", "car", "home", "health", "sports"]
-iterations = 5
-index = 250
+iterations = 10
+index = 300
 examples = []
 for domain in domains:
     for i in range(0, iterations):

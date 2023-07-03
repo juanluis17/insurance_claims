@@ -65,55 +65,60 @@ for classifier_name, classifier_dir in estimators:
     if os.path.exists(model_dir_results):
         pred_labels, scores = pickle.load(open(model_dir_results, 'rb'))
     else:
-        if any(k in classifier_dir for k in ("gpt", "opt", "bloom")):
-            padding_side = "left"
+        if os.path.exists(model_dir):
+            model = AutoModelForSequenceClassification.from_pretrained(
+                model_dir, num_labels=len(label2id), id2label=id2label, label2id=label2id
+            )
         else:
-            padding_side = "right"
-        tokenizer = AutoTokenizer.from_pretrained(classifier_dir, padding_side=padding_side,
-                                                  trust_remote_code=True)
-        if getattr(tokenizer, "pad_token_id") is None:
-            tokenizer.pad_token_id = tokenizer.eos_token_id
-            tokenizer.pad_token = tokenizer.eos_token
+            if any(k in classifier_dir for k in ("gpt", "opt", "bloom")):
+                padding_side = "left"
+            else:
+                padding_side = "right"
+            tokenizer = AutoTokenizer.from_pretrained(classifier_dir, padding_side=padding_side,
+                                                      trust_remote_code=True)
+            if getattr(tokenizer, "pad_token_id") is None:
+                tokenizer.pad_token_id = tokenizer.eos_token_id
+                tokenizer.pad_token = tokenizer.eos_token
 
-        data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
+            data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
 
-        def preprocess_function(examples):
-            return tokenizer(examples["text"], truncation=True)
+            def preprocess_function(examples):
+                return tokenizer(examples["text"], truncation=True)
 
 
-        train_valid_tokenized = train_valid.map(preprocess_function, batched=True)
-        train_valid_tokenized = train_valid_tokenized.remove_columns("text")
+            train_valid_tokenized = train_valid.map(preprocess_function, batched=True)
+            train_valid_tokenized = train_valid_tokenized.remove_columns("text")
 
-        model = AutoModelForSequenceClassification.from_pretrained(
-            classifier_dir, num_labels=len(label2id), id2label=id2label, label2id=label2id
-        )
-        if 'gpt' in model_dir:
-            model.config.pad_token_id = model.config.eos_token_id
+            model = AutoModelForSequenceClassification.from_pretrained(
+                classifier_dir, num_labels=len(label2id), id2label=id2label, label2id=label2id
+            )
+            if 'gpt' in model_dir:
+                model.config.pad_token_id = model.config.eos_token_id
 
-        training_args = TrainingArguments(
-            output_dir=model_dir,
-            learning_rate=2e-5,
-            per_device_train_batch_size=batch_size,
-            per_device_eval_batch_size=batch_size,
-            num_train_epochs=epoch,
-            weight_decay=0.01,
-            evaluation_strategy="epoch",
-            save_strategy="epoch",
-            load_best_model_at_end=True,
-            save_total_limit=1,
-        )
-        callbacks = [EarlyStoppingCallback(early_stopping_patience=5)]
+            training_args = TrainingArguments(
+                output_dir=model_dir,
+                learning_rate=2e-5,
+                per_device_train_batch_size=batch_size,
+                per_device_eval_batch_size=batch_size,
+                num_train_epochs=epoch,
+                weight_decay=0.01,
+                evaluation_strategy="epoch",
+                save_strategy="epoch",
+                load_best_model_at_end=True,
+                save_total_limit=1,
+            )
+            callbacks = [EarlyStoppingCallback(early_stopping_patience=5)]
 
-        trainer = Trainer(
-            model=model,
-            args=training_args,
-            train_dataset=train_valid_tokenized['train'],
-            eval_dataset=train_valid_tokenized['test'],
-            tokenizer=tokenizer,
-            callbacks=callbacks,
-            data_collator=data_collator
-        )
-        trainer.train()
-        # trainer.train(resume_from_checkpoint=model_dir)
-        model.save_pretrained(model_dir)
+            trainer = Trainer(
+                model=model,
+                args=training_args,
+                train_dataset=train_valid_tokenized['train'],
+                eval_dataset=train_valid_tokenized['test'],
+                tokenizer=tokenizer,
+                callbacks=callbacks,
+                data_collator=data_collator
+            )
+            trainer.train()
+            # trainer.train(resume_from_checkpoint=model_dir)
+            model.save_pretrained(model_dir)
