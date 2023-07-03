@@ -46,7 +46,7 @@ if not os.path.exists(save_results_dir):
 
 # LLM Classifiers
 estimators = [
-    # ["gpt2", 'gpt2'],
+    ["gpt2", 'gpt2'],
     ["bart_large", 'facebook/bart-large'],
     ["bert_base", 'bert-base-uncased'],
     ["distilbert", 'distilbert-base-uncased'],
@@ -70,6 +70,7 @@ for classifier_name, classifier_dir in estimators:
         if getattr(tokenizer, "pad_token_id") is None:
             tokenizer.pad_token_id = tokenizer.eos_token_id
             tokenizer.pad_token = tokenizer.eos_token
+
         data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
 
@@ -84,6 +85,9 @@ for classifier_name, classifier_dir in estimators:
         model = AutoModelForSequenceClassification.from_pretrained(
             classifier_dir, num_labels=len(label2id), id2label=id2label, label2id=label2id
         )
+        if 'gpt' in model_dir:
+            model.config.pad_token_id = model.config.eos_token_id
+
         training_args = TrainingArguments(
             output_dir=model_dir,
             learning_rate=2e-5,
