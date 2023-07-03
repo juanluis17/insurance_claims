@@ -114,6 +114,7 @@ for classifier_name, classifier_dir in estimators:
                 save_strategy="epoch",
                 load_best_model_at_end=True,
                 save_total_limit=1,
+                logging_steps=10,
             )
             callbacks = [EarlyStoppingCallback(early_stopping_patience=10)]
 

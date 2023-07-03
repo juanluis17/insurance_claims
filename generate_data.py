@@ -6,8 +6,8 @@ import time
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 domains = ["life", "car", "home", "health", "sports"]
-iterations = 10
-index = 300
+iterations = 25
+index = 0
 examples = []
 for domain in domains:
     for i in range(0, iterations):
@@ -15,16 +15,6 @@ for domain in domains:
             chat_completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user",
                                                                                              "content": f"Could you generate me a long realistic example of insurance claim in the {domain} domain."}])
             example = chat_completion.choices[0].message.content
-            print(example)
-            if '---' in example:
-                example = example.split('---')[1]
-            if '---' in example:
-                example = example.split('---')[0]
-            if '===================================' in example:
-                example = example.split('===================================')[1]
-            if '===================================' in example:
-                example = example.split('===================================')[0]
-            print(example)
             examples.append([index, example.strip(), domain])
             index += 1
             time.sleep(0.5)
