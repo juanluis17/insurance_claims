@@ -13,7 +13,7 @@ from sklearn.metrics import roc_curve
 from transformers import AutoTokenizer
 from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer, EarlyStoppingCallback
 from transformers import DataCollatorWithPadding
-from datasets import Dataset
+from datasets import Dataset, load_dataset
 
 # GPU
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -23,17 +23,21 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 label2id = {"car": 0, "home": 1, "life": 2, "health": 3, "sports": 4}
 id2label = {value: key for key, value in label2id.items()}
 
-data = pd.read_csv("./data/insurance_dataset.csv", header=0)
-data = data.dropna().reset_index(drop=True)
-texts = data['text'].tolist()
-labels = [label2id[x] for x in data['label'].tolist()]
+if os.path.exists("dataset.hf"):
+    train_valid = load_dataset("dataset.hf")
+else:
+    data = pd.read_csv("./data/insurance_dataset.csv", header=0)
+    data = data.dropna().reset_index(drop=True)
+    texts = data['text'].tolist()
+    labels = [label2id[x] for x in data['label'].tolist()]
 
-dataset = Dataset.from_dict({"text": texts, "labels": labels})
+    dataset = Dataset.from_dict({"text": texts, "labels": labels})
+    train_valid = dataset.train_test_split(test_size=0.2)
+    train_valid.save_to_disk("dataset.hf")
 
 # Parameters of the models
 epoch = 10000
-max_length = 300
-batch_size = 16
+batch_size = 4
 
 # Directories
 save_checkpoints_dir = "./checkpoints/"
@@ -65,7 +69,7 @@ for classifier_name, classifier_dir in estimators:
             padding_side = "left"
         else:
             padding_side = "right"
-        tokenizer = AutoTokenizer.from_pretrained(classifier_dir, padding_side=padding_side, max_length=512,
+        tokenizer = AutoTokenizer.from_pretrained(classifier_dir, padding_side=padding_side,
                                                   trust_remote_code=True)
         if getattr(tokenizer, "pad_token_id") is None:
             tokenizer.pad_token_id = tokenizer.eos_token_id
@@ -78,7 +82,6 @@ for classifier_name, classifier_dir in estimators:
             return tokenizer(examples["text"], truncation=True)
 
 
-        train_valid = dataset.train_test_split(test_size=0.2)
         train_valid_tokenized = train_valid.map(preprocess_function, batched=True)
         train_valid_tokenized = train_valid_tokenized.remove_columns("text")
 
@@ -91,8 +94,8 @@ for classifier_name, classifier_dir in estimators:
         training_args = TrainingArguments(
             output_dir=model_dir,
             learning_rate=2e-5,
-            per_device_train_batch_size=4,
-            per_device_eval_batch_size=4,
+            per_device_train_batch_size=batch_size,
+            per_device_eval_batch_size=batch_size,
             num_train_epochs=epoch,
             weight_decay=0.01,
             evaluation_strategy="epoch",
@@ -100,7 +103,7 @@ for classifier_name, classifier_dir in estimators:
             load_best_model_at_end=True,
             save_total_limit=1,
         )
-        callbacks = [EarlyStoppingCallback(early_stopping_patience=10)]
+        callbacks = [EarlyStoppingCallback(early_stopping_patience=5)]
 
         trainer = Trainer(
             model=model,
@@ -112,6 +115,5 @@ for classifier_name, classifier_dir in estimators:
             data_collator=data_collator
         )
         trainer.train()
-        train_valid_tokenized.save_to_disk("dataset.hf")
         # trainer.train(resume_from_checkpoint=model_dir)
         model.save_pretrained(model_dir)
