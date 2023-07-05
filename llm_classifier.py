@@ -26,9 +26,9 @@ batch_size = 4
 
 # LLM Classifiers
 estimators = [
-    ["bert_base", "bert-base-uncased"],
     ["distilbert", "distilbert-base-uncased"],
     ["roberta_base", "roberta-base"],
+    ["bert_base", "bert-base-uncased"],
     ["gpt2", "gpt2"],
     ["bart_large", "facebook/bart-large"],
 ]
