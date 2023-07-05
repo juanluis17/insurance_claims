@@ -26,9 +26,9 @@ batch_size = 4
 
 # LLM Classifiers
 estimators = [
+    ["bert_base", "bert-base-uncased"],
     ["distilbert", "distilbert-base-uncased"],
     ["roberta_base", "roberta-base"],
-    ["bert_base", "bert-base-uncased"],
     ["gpt2", "gpt2"],
     ["bart_large", "facebook/bart-large"],
 ]
@@ -39,7 +39,7 @@ if not os.path.exists(save_results_dir):
 
 results = []
 
-revisions = [5, 4, 3, 2, 1]
+revisions = [1, 2, 3, 4, 5]
 
 for revision in revisions:
 
