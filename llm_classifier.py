@@ -24,8 +24,8 @@ id2label = {value: key for key, value in label2id.items()}
 
 revision = 4
 
-if os.path.exists("dataset.hf"):
-    train_valid = load_from_disk("dataset.hf")
+if os.path.exists(f"dataset.hf_{revision}"):
+    train_valid = load_from_disk(f"dataset.hf_{revision}")
 else:
     data = pd.read_csv("./data/insurance_dataset.csv", header=0)
     data = data.dropna().reset_index(drop=True)
@@ -35,18 +35,18 @@ else:
     print(c)
     dataset = Dataset.from_dict({"text": texts, "labels": labels})
     train_valid = dataset.train_test_split(test_size=0.2)
-    train_valid.save_to_disk("dataset.hf")
+    train_valid.save_to_disk(f"dataset.hf_{revision}")
 
 # Parameters of the models
 epoch = 1000
-batch_size = 4
+batch_size = 3
 
 # Directories
-save_checkpoints_dir = "./checkpoints/"
+save_checkpoints_dir = f"./checkpoints_{revision}/"
 if not os.path.exists(save_checkpoints_dir):
     os.makedirs(save_checkpoints_dir)
 
-save_results_dir = "./results"
+save_results_dir = f"./results_{revision}"
 if not os.path.exists(save_results_dir):
     os.makedirs(save_results_dir)
 
