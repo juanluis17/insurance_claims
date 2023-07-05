@@ -27,7 +27,7 @@ batch_size = 4
 estimators = [
     ["gpt2", 'gpt2'],
     ["bart_large", 'facebook/bart-large'],
-    #["bert_base", 'bert-base-uncased'],
+    # ["bert_base", 'bert-base-uncased'],
     ["distilbert", 'distilbert-base-uncased'],
     ["roberta_base", 'roberta-base'],
 ]
@@ -35,32 +35,33 @@ estimators = [
 revisions = [5, 4, 3, 2, 1]
 
 for revision in revisions:
-    try:
-        if os.path.exists(f"dataset.hf_{revision}"):
-            train_valid = load_from_disk(f"dataset.hf_{revision}")
-        else:
-            data = pd.read_csv("./data/insurance_dataset.csv", header=0)
-            data = data.dropna().reset_index(drop=True)
-            texts = data['text'].tolist()
-            labels = [label2id[x] for x in data['label'].tolist()]
-            c = collections.Counter(labels)
-            print(c)
-            dataset = Dataset.from_dict({"text": texts, "labels": labels})
-            train_valid = dataset.train_test_split(test_size=0.2)
-            train_valid.save_to_disk(f"dataset.hf_{revision}")
 
-        # Directories
-        save_checkpoints_dir = f"./checkpoints_{revision}/"
-        if not os.path.exists(save_checkpoints_dir):
-            os.makedirs(save_checkpoints_dir)
+    if os.path.exists(f"dataset.hf_{revision}"):
+        train_valid = load_from_disk(f"dataset.hf_{revision}")
+    else:
+        data = pd.read_csv("./data/insurance_dataset.csv", header=0)
+        data = data.dropna().reset_index(drop=True)
+        texts = data['text'].tolist()
+        labels = [label2id[x] for x in data['label'].tolist()]
+        c = collections.Counter(labels)
+        print(c)
+        dataset = Dataset.from_dict({"text": texts, "labels": labels})
+        train_valid = dataset.train_test_split(test_size=0.2)
+        train_valid.save_to_disk(f"dataset.hf_{revision}")
 
-        save_results_dir = f"./results_{revision}"
-        if not os.path.exists(save_results_dir):
-            os.makedirs(save_results_dir)
+    # Directories
+    save_checkpoints_dir = f"./checkpoints_{revision}/"
+    if not os.path.exists(save_checkpoints_dir):
+        os.makedirs(save_checkpoints_dir)
 
-        print("Starting...")
-        for classifier_name, classifier_dir in estimators:
-            print(f'\tTesting {classifier_name}')
+    save_results_dir = f"./results_{revision}"
+    if not os.path.exists(save_results_dir):
+        os.makedirs(save_results_dir)
+
+    print("Starting...")
+    for classifier_name, classifier_dir in estimators:
+        print(f'\tTesting {classifier_name}')
+        try:
             model_dir = os.path.join(save_checkpoints_dir, classifier_name)
             model_dir_results = os.path.join(save_results_dir, f'{classifier_name}_preds.pkl')
             if os.path.exists(model_dir_results):
@@ -141,5 +142,5 @@ for revision in revisions:
                 acc_ = accuracy_score(y_true=labels, y_pred=labels)
                 print(res)
                 print(acc_)
-    except Exception as e:
-        print(e)
+        except Exception as e:
+            print(e)
