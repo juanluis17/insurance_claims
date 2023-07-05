@@ -89,7 +89,7 @@ for revision in revisions:
 
 
                     def preprocess_function(examples):
-                        return tokenizer(examples["text"], padding=True, max_length=512, truncation=True)
+                        return tokenizer(examples["text"], truncation=True)
 
 
                     train_valid_tokenized = train_valid.map(preprocess_function, batched=True)
@@ -137,7 +137,7 @@ for revision in revisions:
                 predictions = []
                 scores = []
                 for text in texts:
-                    prediction = classifier(text)
+                    prediction = classifier(text, truncation=True)
                     predictions.append(label2id[prediction[0]["label"]])
                     scores.append(prediction[0]["score"])
                 metrics_data = classification_report(y_true=labels, y_pred=predictions, output_dict=True,
