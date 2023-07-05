@@ -140,7 +140,5 @@ for classifier_name, classifier_dir in estimators:
         res = classification_report(y_true=labels, y_pred=predictions, output_dict=True,
                                     target_names=["car", "home", "life", "health", "sports"])
         acc_ = accuracy_score(y_true=labels, y_pred=labels)
-        roc_au_score_macro = roc_auc_score(labels, scores, average='macro')
-        roc_au_score_micro = roc_auc_score(labels, scores, average='micro')
         print(res)
         print(acc_)
