@@ -135,6 +135,7 @@ for classifier_name, classifier_dir in estimators:
         scores = []
         for text in texts:
             prediction = classifier(text)
+            print(prediction)
             predictions.append(label2id[prediction["label"]])
             scores.append(prediction["score"])
 
