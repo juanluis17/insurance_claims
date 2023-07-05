@@ -39,7 +39,7 @@ else:
 
 # Parameters of the models
 epoch = 1000
-batch_size = 3
+batch_size = 4
 
 # Directories
 save_checkpoints_dir = f"./checkpoints_{revision}/"
