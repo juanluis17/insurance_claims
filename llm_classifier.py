@@ -80,7 +80,7 @@ for revision in revisions:
                     else:
                         padding_side = "right"
                     tokenizer = AutoTokenizer.from_pretrained(classifier_dir, padding_side=padding_side,
-                                                              trust_remote_code=True)
+                    trust_remote_code = True)
                     if getattr(tokenizer, "pad_token_id") is None:
                         tokenizer.pad_token_id = tokenizer.eos_token_id
                         tokenizer.pad_token = tokenizer.eos_token
@@ -128,7 +128,7 @@ for revision in revisions:
                     )
                     trainer.train()
                     model.save_pretrained(model_dir)
-                classifier = pipeline("text-classification", model=model, tokenizer=classifier_dir)
+                classifier = pipeline("text-classification", model=model, tokenizer=classifier_dir,truncating = True)
                 test_data = pd.read_csv("./data/test_insurance_dataset.csv", header=0)
                 test_data = test_data.dropna().reset_index(drop=True)
                 texts = test_data["text"].tolist()
