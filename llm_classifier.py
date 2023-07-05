@@ -22,7 +22,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 label2id = {"car": 0, "home": 1, "life": 2, "health": 3, "sports": 4}
 id2label = {value: key for key, value in label2id.items()}
 
-revision = 4
+revision = 3
 
 if os.path.exists(f"dataset.hf_{revision}"):
     train_valid = load_from_disk(f"dataset.hf_{revision}")
