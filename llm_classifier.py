@@ -1,18 +1,17 @@
 import pandas as pd
-import numpy as np
 import os
-from sklearn.model_selection import train_test_split
 import pickle
 from sklearn import metrics
 from sklearn.metrics import classification_report
-from sklearn.metrics import matthews_corrcoef
 from sklearn.metrics import roc_auc_score
+from sklearn.metrics import accuracy_score
 from sklearn.metrics import roc_curve
 # import matplotlib.pyplot as plt
-
+import collections
 from transformers import AutoTokenizer
 from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer, EarlyStoppingCallback
 from transformers import DataCollatorWithPadding
+from transformers import pipeline
 from datasets import Dataset, load_from_disk
 
 # GPU
@@ -23,6 +22,8 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 label2id = {"car": 0, "home": 1, "life": 2, "health": 3, "sports": 4}
 id2label = {value: key for key, value in label2id.items()}
 
+revision = 4
+
 if os.path.exists("dataset.hf"):
     train_valid = load_from_disk("dataset.hf")
 else:
@@ -30,7 +31,8 @@ else:
     data = data.dropna().reset_index(drop=True)
     texts = data['text'].tolist()
     labels = [label2id[x] for x in data['label'].tolist()]
-
+    c = collections.Counter(labels)
+    print(c)
     dataset = Dataset.from_dict({"text": texts, "labels": labels})
     train_valid = dataset.train_test_split(test_size=0.2)
     train_valid.save_to_disk("dataset.hf")
@@ -69,12 +71,6 @@ for classifier_name, classifier_dir in estimators:
             model = AutoModelForSequenceClassification.from_pretrained(
                 model_dir, num_labels=len(label2id), id2label=id2label, label2id=label2id
             )
-            from transformers import pipeline
-
-            classifier = pipeline("text-classification", model=model, tokenizer=classifier_dir)
-            print(classifier(
-                "John Smith had been diligently paying his life insurance premiums for over 20 years. At the age of 55, tragedy struck when he suddenly passed away due to a heart attack. John's family was devastated by the unexpected loss of their beloved father and husband, but they took solace in knowing that they could rely on the life insurance policy he had maintained for so long. After the funeral, John's wife, Mary, contacted the insurance company to initiate the claims process. She promptly submitted all the necessary documentation, including the death certificate, the policy documents, and the completed claim form. The insurance company acknowledged receipt of the claim and assigned a dedicated claims representative to handle Mary's case. The claims representative, Sarah Davis, carefully reviewed the submitted documents to verify their validity. She also reached out to the attending physician to obtain additional medical records and to ensure that there were no underlying health issues that could affect the claim. Sarah provided Mary with regular updates, assuring her that the claim was progressing smoothly and that they were working diligently to expedite the process during this difficult time."))
-
         else:
             if any(k in classifier_dir for k in ("gpt", "opt", "bloom")):
                 padding_side = "left"
@@ -128,5 +124,19 @@ for classifier_name, classifier_dir in estimators:
                 data_collator=data_collator
             )
             trainer.train()
-            # trainer.train(resume_from_checkpoint=model_dir)
             model.save_pretrained(model_dir)
+        classifier = pipeline("text-classification", model=model, tokenizer=classifier_dir)
+        test_data = pd.read_csv("./data/test_insurance_dataset.csv", header=0)
+        test_data = test_data.dropna().reset_index(drop=True)
+        texts = test_data['text'].tolist()
+        labels = [label2id[x] for x in test_data['label'].tolist()]
+
+        predictions = []
+        for text in texts:
+            prediction = classifier(text)
+            predictions.append(label2id[prediction["label"]])
+
+        res = classification_report(y_true=labels, y_pred=predictions, output_dict=True)
+        acc_ = accuracy_score(y_true=labels, y_pred=labels)
+        print(res)
+        print(acc_)
