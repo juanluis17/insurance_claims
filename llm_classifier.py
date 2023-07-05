@@ -10,6 +10,7 @@ from transformers import AutoModelForSequenceClassification, TrainingArguments, 
 from transformers import DataCollatorWithPadding
 from transformers import pipeline
 from datasets import Dataset, load_from_disk
+from utils import group_data, export_to_xlsx
 
 # GPU
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -25,12 +26,18 @@ batch_size = 4
 
 # LLM Classifiers
 estimators = [
-    ["gpt2", 'gpt2'],
-    ["bart_large", 'facebook/bart-large'],
-    # ["bert_base", 'bert-base-uncased'],
-    ["distilbert", 'distilbert-base-uncased'],
-    ["roberta_base", 'roberta-base'],
+    ["gpt2", "gpt2"],
+    ["bart_large", "facebook/bart-large"],
+    # ["bert_base", "bert-base-uncased"],
+    ["distilbert", "distilbert-base-uncased"],
+    ["roberta_base", "roberta-base"],
 ]
+
+save_results_dir = f"./results"
+if not os.path.exists(save_results_dir):
+    os.makedirs(save_results_dir)
+
+results = []
 
 revisions = [5, 4, 3, 2, 1]
 
@@ -41,8 +48,8 @@ for revision in revisions:
     else:
         data = pd.read_csv("./data/insurance_dataset.csv", header=0)
         data = data.dropna().reset_index(drop=True)
-        texts = data['text'].tolist()
-        labels = [label2id[x] for x in data['label'].tolist()]
+        texts = data["text"].tolist()
+        labels = [label2id[x] for x in data["label"].tolist()]
         c = collections.Counter(labels)
         print(c)
         dataset = Dataset.from_dict({"text": texts, "labels": labels})
@@ -54,20 +61,16 @@ for revision in revisions:
     if not os.path.exists(save_checkpoints_dir):
         os.makedirs(save_checkpoints_dir)
 
-    save_results_dir = f"./results_{revision}"
-    if not os.path.exists(save_results_dir):
-        os.makedirs(save_results_dir)
-
     print("Starting...")
     for classifier_name, classifier_dir in estimators:
-        print(f'\tTesting {classifier_name}')
+        print(f"\tTesting {classifier_name}")
         try:
             model_dir = os.path.join(save_checkpoints_dir, classifier_name)
-            model_dir_results = os.path.join(save_results_dir, f'{classifier_name}_preds.pkl')
+            model_dir_results = os.path.join(save_results_dir, f"{classifier_name}_preds.pkl")
             if os.path.exists(model_dir_results):
-                pred_labels, scores = pickle.load(open(model_dir_results, 'rb'))
+                pred_labels, scores = pickle.load(open(model_dir_results, "rb"))
             else:
-                if os.path.exists(os.path.join(model_dir, 'pytorch_model.bin')):
+                if os.path.exists(os.path.join(model_dir, "pytorch_model.bin")):
                     model = AutoModelForSequenceClassification.from_pretrained(
                         model_dir, num_labels=len(label2id), id2label=id2label, label2id=label2id
                     )
@@ -95,9 +98,9 @@ for revision in revisions:
                     model = AutoModelForSequenceClassification.from_pretrained(
                         classifier_dir, num_labels=len(label2id), id2label=id2label, label2id=label2id
                     )
-                    if 'gpt' in model_dir:
+                    if "gpt" in model_dir:
                         model.config.pad_token_id = model.config.eos_token_id
-                    if 'bart' in model_dir:
+                    if "bart" in model_dir:
                         batch_size = 2
                     training_args = TrainingArguments(
                         output_dir=model_dir,
@@ -117,8 +120,8 @@ for revision in revisions:
                     trainer = Trainer(
                         model=model,
                         args=training_args,
-                        train_dataset=train_valid_tokenized['train'],
-                        eval_dataset=train_valid_tokenized['test'],
+                        train_dataset=train_valid_tokenized["train"],
+                        eval_dataset=train_valid_tokenized["test"],
                         tokenizer=tokenizer,
                         callbacks=callbacks,
                         data_collator=data_collator
@@ -128,8 +131,8 @@ for revision in revisions:
                 classifier = pipeline("text-classification", model=model, tokenizer=classifier_dir)
                 test_data = pd.read_csv("./data/test_insurance_dataset.csv", header=0)
                 test_data = test_data.dropna().reset_index(drop=True)
-                texts = test_data['text'].tolist()
-                labels = [label2id[x] for x in test_data['label'].tolist()]
+                texts = test_data["text"].tolist()
+                labels = [label2id[x] for x in test_data["label"].tolist()]
 
                 predictions = []
                 scores = []
@@ -137,10 +140,50 @@ for revision in revisions:
                     prediction = classifier(text)
                     predictions.append(label2id[prediction[0]["label"]])
                     scores.append(prediction[0]["score"])
-                res = classification_report(y_true=labels, y_pred=predictions, output_dict=True,
-                                            target_names=["car", "home", "life", "health", "sports"])
-                acc_ = accuracy_score(y_true=labels, y_pred=labels)
-                print(res)
-                print(acc_)
+                metrics_data = classification_report(y_true=labels, y_pred=predictions, output_dict=True,
+                                                     target_names=["car", "home", "life", "health", "sports"])
+                accuracy = accuracy_score(y_true=labels, y_pred=predictions)
+                print(metrics_data)
+                print(accuracy)
+                results.append([
+                    revision, classifier_name, accuracy,
+                    metrics_data["macro avg"]["precision"],
+                    metrics_data["macro avg"]["recall"],
+                    metrics_data["macro avg"]["f1"],
+
+                    metrics_data["car"]["precision"],
+                    metrics_data["home"]["precision"],
+                    metrics_data["life"]["precision"],
+                    metrics_data["health"]["precision"],
+                    metrics_data["sports"]["precision"],
+
+                    metrics_data["car"]["recall"],
+                    metrics_data["home"]["recall"],
+                    metrics_data["life"]["recall"],
+                    metrics_data["health"]["recall"],
+                    metrics_data["sports"]["recall"],
+
+                    metrics_data["car"]["f1"],
+                    metrics_data["home"]["f1"],
+                    metrics_data["life"]["f1"],
+                    metrics_data["health"]["f1"],
+                    metrics_data["sports"]["f1"],
+                ])
+
+
         except Exception as e:
             print(e)
+
+columns = ["revision", "classifier", "accuracy", "precision_macro", "recall_macro", "f1_macro",
+           "precision_car", "precision_home", "precision_life", "precision_health", "precision_sports",
+           "recall_car", "recall_home", "recall_life", "recall_health", "recall_sports",
+           "f1_car", "f1_home", "f1_life", "f1_health", "f1_sports",
+           ]
+
+# Create a DataFrame from the filtered results
+df_results = pd.DataFrame(results, columns=columns)
+df_results.to_csv(os.path.join(save_results_dir, "results.csv"))
+
+grouped_data = group_data(df_results, ["classifier"])
+
+export_to_xlsx(grouped_data, os.path.join(save_results_dir, "results.xlsx"))
