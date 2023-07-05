@@ -28,7 +28,7 @@ batch_size = 4
 estimators = [
     ["gpt2", "gpt2"],
     ["bart_large", "facebook/bart-large"],
-    # ["bert_base", "bert-base-uncased"],
+    ["bert_base", "bert-base-uncased"],
     ["distilbert", "distilbert-base-uncased"],
     ["roberta_base", "roberta-base"],
 ]
