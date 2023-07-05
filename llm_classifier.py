@@ -107,7 +107,7 @@ for revision in revisions:
                     evaluation_strategy="epoch",
                     save_strategy="epoch",
                     load_best_model_at_end=True,
-                    save_total_limit=1,
+                    save_total_limit=2,
                     logging_steps=10,
                 )
                 callbacks = [EarlyStoppingCallback(early_stopping_patience=10)]
