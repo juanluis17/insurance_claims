@@ -134,13 +134,9 @@ for classifier_name, classifier_dir in estimators:
         predictions = []
         scores = []
         for text in texts:
-            try:
-                prediction = classifier(text)
-                predictions.append(label2id[prediction[0]["label"]])
-                scores.append(prediction[0]["score"])
-            except:
-                print(text)
-                pass
+            prediction = classifier(text)
+            predictions.append(label2id[prediction[0]["label"]])
+            scores.append(prediction[0]["score"])
         res = classification_report(y_true=labels, y_pred=predictions, output_dict=True,
                                     target_names=["car", "home", "life", "health", "sports"])
         acc_ = accuracy_score(y_true=labels, y_pred=labels)
