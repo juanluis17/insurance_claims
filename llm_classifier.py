@@ -149,7 +149,7 @@ for revision in revisions:
                     revision, classifier_name, accuracy,
                     metrics_data["macro avg"]["precision"],
                     metrics_data["macro avg"]["recall"],
-                    metrics_data["macro avg"]["f1"],
+                    metrics_data["macro avg"]["f1-score"],
 
                     metrics_data["car"]["precision"],
                     metrics_data["home"]["precision"],
@@ -163,11 +163,11 @@ for revision in revisions:
                     metrics_data["health"]["recall"],
                     metrics_data["sports"]["recall"],
 
-                    metrics_data["car"]["f1"],
-                    metrics_data["home"]["f1"],
-                    metrics_data["life"]["f1"],
-                    metrics_data["health"]["f1"],
-                    metrics_data["sports"]["f1"],
+                    metrics_data["car"]["f1-score"],
+                    metrics_data["home"]["f1-score"],
+                    metrics_data["life"]["f1-score"],
+                    metrics_data["health"]["f1-score"],
+                    metrics_data["sports"]["f1-score"],
                 ])
 
 
