@@ -32,7 +32,7 @@ estimators = [
     ["roberta_base", 'roberta-base'],
 ]
 
-revisions = [1, 2, 3, 4, 5]
+revisions = [5, 4, 3, 2, 1]
 
 for revision in revisions:
     if os.path.exists(f"dataset.hf_{revision}"):
