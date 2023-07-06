@@ -48,9 +48,7 @@ results = []
 revisions = [1, 2, 3, 4, 5]
 
 if not os.path.exists(os.path.join(save_results_dir, "results.csv")):
-
     for revision in revisions:
-
         if os.path.exists(f"dataset.hf_{revision}"):
             train_valid = load_from_disk(f"dataset.hf_{revision}")
         else:
