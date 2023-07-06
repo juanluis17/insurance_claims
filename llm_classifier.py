@@ -33,6 +33,11 @@ estimators = [
     ["bart_large", "facebook/bart-large"],
 ]
 
+test_data = pd.read_csv("./data/test_insurance_dataset.csv", header=0)
+test_data = test_data.dropna().reset_index(drop=True)
+test_texts = test_data["text"].tolist()
+test_labels = [label2id[x] for x in test_data["label"].tolist()]
+
 save_results_dir = f"./results"
 if not os.path.exists(save_results_dir):
     os.makedirs(save_results_dir)
@@ -129,20 +134,16 @@ for revision in revisions:
                     trainer.train()
                     model.save_pretrained(model_dir)
                 classifier = pipeline("text-classification", model=model, tokenizer=classifier_dir)
-                test_data = pd.read_csv("./data/test_insurance_dataset.csv", header=0)
-                test_data = test_data.dropna().reset_index(drop=True)
-                texts = test_data["text"].tolist()
-                labels = [label2id[x] for x in test_data["label"].tolist()]
 
                 predictions = []
                 scores = []
-                for text in texts:
+                for text in test_texts:
                     prediction = classifier(text, truncation=True)
                     predictions.append(label2id[prediction[0]["label"]])
                     scores.append(prediction[0]["score"])
-                metrics_data = classification_report(y_true=labels, y_pred=predictions, output_dict=True,
+                metrics_data = classification_report(y_true=test_labels, y_pred=predictions, output_dict=True,
                                                      target_names=["car", "home", "life", "health", "sports"])
-                accuracy = accuracy_score(y_true=labels, y_pred=predictions)
+                accuracy = accuracy_score(y_true=test_labels, y_pred=predictions)
                 print(metrics_data)
                 print(accuracy)
                 results.append([
