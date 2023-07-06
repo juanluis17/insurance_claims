@@ -205,7 +205,7 @@ df_results[["classifier", 'precision_macro', 'recall_macro', 'f1_macro']].groupb
     .plot.bar(rot=0,
               # figsize=(10,4), # Figsize to make the plot larger
               # title='', # Adding a title to the top
-              xlabel="Classifier",
+              xlabel="Model",
               # Adding a label on y axis
               fontsize='large')
 plt.savefig(os.path.join(save_results_dir, 'macro_precision.png'), bbox_inches='tight')
