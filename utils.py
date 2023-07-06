@@ -18,23 +18,28 @@ def group_data(data, criteria):
         {
             "accuracy": ["mean", "std"],
 
-            "TP": ["mean", "std"],
-            "FN": ["mean", "std"],
-            "FP": ["mean", "std"],
-            "TN": ["mean", "std"],
-
             "precision_macro": ["mean", "std"],
             "recall_macro": ["mean", "std"],
             "f1_macro": ["mean", "std"],
-            "f1_weighted": ["mean", "std"],
-            "mcc": ["mean", "std"],
-            "roc_au_score_macro": ["mean", "std"],
-            "precision_positive": ["mean", "std"],
-            "recall_positive": ["mean", "std"],
-            "f1_positive": ["mean", "std"],
-            "precision_negative": ["mean", "std"],
-            "recall_negative": ["mean", "std"],
-            "f1_negative": ["mean", "std"]
+
+            "precision_car": ["mean", "std"],
+            "precision_home": ["mean", "std"],
+            "precision_life": ["mean", "std"],
+            "precision_health": ["mean", "std"],
+            "precision_sports": ["mean", "std"],
+
+            "recall_car": ["mean", "std"],
+            "recall_home": ["mean", "std"],
+            "recall_life": ["mean", "std"],
+            "recall_health": ["mean", "std"],
+            "recall_sports": ["mean", "std"],
+
+            "f1_car": ["mean", "std"],
+            "f1_home": ["mean", "std"],
+            "f1_life": ["mean", "std"],
+            "f1_health": ["mean", "std"],
+            "f1_sports": ["mean", "std"],
+
         })
     grouped_multiple = grouped_multiple.reset_index()
     return grouped_multiple
