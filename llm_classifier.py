@@ -191,14 +191,23 @@ grouped_data = group_data(df_results, ["classifier"])
 
 export_to_xlsx(grouped_data, os.path.join(save_results_dir, "results.xlsx"))
 
-chart = df_results.groupby('classifier')['precision_macro'].mean().plot.bar(x='classifier', y='precision_macro',
-                                                                            rot=0,
-                                                                            # figsize=(10,4), # Figsize to make the plot larger
-                                                                            # title='', # Adding a title to the top
-                                                                            xlabel="Classifier",
-                                                                            # Adding a label on the xaxis
-                                                                            ylabel="Macro Precision",
-                                                                            # Adding a label on y axis
-                                                                            fontsize='large')
+# df_results.groupby('classifier')['precision_macro'].mean().plot.bar(x='classifier',
+#                                                                             rot=0,
+#                                                                             # figsize=(10,4), # Figsize to make the plot larger
+#                                                                             # title='', # Adding a title to the top
+#                                                                             xlabel="Classifier",
+#                                                                             # Adding a label on the xaxis
+#                                                                             ylabel="Macro Precision",
+#                                                                             # Adding a label on y axis
+#                                                                             fontsize='large')
+df_results[["classifier", 'precision_macro', 'recall_macro', 'f1_macro']].groupby(by="classifier").mean() \
+    .sort_values("precision_macro", ascending=False) \
+    .plot.bar(rot=0,
+              # figsize=(10,4), # Figsize to make the plot larger
+              # title='', # Adding a title to the top
+              xlabel="Classifier",
+              # Adding a label on y axis
+              fontsize='large')
 plt.savefig(os.path.join(save_results_dir, 'macro_precision.png'), bbox_inches='tight')
+
 plt.show()
