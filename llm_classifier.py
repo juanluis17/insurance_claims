@@ -3,7 +3,7 @@ import os
 import pickle
 from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import collections
 from transformers import AutoTokenizer
 from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer, EarlyStoppingCallback
@@ -11,6 +11,7 @@ from transformers import DataCollatorWithPadding
 from transformers import pipeline
 from datasets import Dataset, load_from_disk
 from utils import group_data, export_to_xlsx
+import numpy as np
 
 # GPU
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -191,3 +192,15 @@ df_results = pd.read_csv(os.path.join(save_results_dir, "results.csv"))
 grouped_data = group_data(df_results, ["classifier"])
 
 export_to_xlsx(grouped_data, os.path.join(save_results_dir, "results.xlsx"))
+
+chart = df_results.groupby('classifier')['precision_macro'].mean().plot.bar(x='classifier', y='precision_macro',
+                                                                            rot=0,
+                                                                            # figsize=(10,4), # Figsize to make the plot larger
+                                                                            # title='', # Adding a title to the top
+                                                                            xlabel="Classifier",
+                                                                            # Adding a label on the xaxis
+                                                                            ylabel="Macro Precision",
+                                                                            # Adding a label on y axis
+                                                                            fontsize='large')
+plt.savefig(os.path.join(save_results_dir, 'macro_precision.png'), bbox_inches='tight')
+plt.show()
